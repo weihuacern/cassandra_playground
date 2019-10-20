@@ -1,0 +1,61 @@
+version: '3'
+services:
+  # Cassandra service
+  cassandra:
+    build:
+      context: ${SRC_DIR}/cassandra
+      dockerfile: Dockerfile
+    image: cassandra:${VERSION}
+    container_name: cassandra
+    restart: unless-stopped
+    network_mode: "host"
+    env_file:
+      #- ${SRC_DIR}/cassandra/env
+      - ${SRC_DIR}/docker/.env
+    ports:
+      - 7000:7000
+      - 7001:7001
+      - 7199:7199
+      - 7916:9160
+      - 9042:9042
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+  # Monitoring service
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - "prometheus:/prometheus"
+      - ${SRC_DIR}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ${SRC_DIR}/prometheus/tg_cassandra.json:/etc/prometheus/tg_cassandra.json
+      - ${SRC_DIR}/prometheus/tg_node.json:/etc/prometheus/tg_node.json
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - "grafana:/var/lib/grafana"
+      - ${SRC_DIR}/grafana/prometheus-datasource.yaml:/etc/grafana/provisioning/datasources/prometheus-datasource.yaml
+      - ${SRC_DIR}/grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ${SRC_DIR}/grafana/dashboards:/var/lib/grafana/dashboards
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+volumes:
+  grafana:
+  prometheus:
