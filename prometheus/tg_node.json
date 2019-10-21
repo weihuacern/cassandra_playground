@@ -1,7 +1,7 @@
 [
   {
     "targets": [ 
-      "127.0.0.1:9100" 
+      "192.168.7.203:9100" 
     ],
     "labels": {
       "cluster": "test_cluster"
