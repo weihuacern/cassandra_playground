@@ -18,12 +18,34 @@ services:
       - 7199:7199
       - 7916:9160
       - 9042:9042
+      - 7070:7070 # monitoring agent
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "5"
   # Monitoring service
+  node-exporter:
+    image: prom/node-exporter:v0.18.1
+    container_name: node-exporter
+    restart: unless-stopped
+    network_mode: "host"
+    ports:
+      - 9100:9100
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -34,6 +56,8 @@ services:
       - ${SRC_DIR}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ${SRC_DIR}/prometheus/tg_cassandra.json:/etc/prometheus/tg_cassandra.json
       - ${SRC_DIR}/prometheus/tg_node.json:/etc/prometheus/tg_node.json
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     logging:
       driver: "json-file"
       options:
@@ -51,6 +75,8 @@ services:
       - ${SRC_DIR}/grafana/prometheus-datasource.yaml:/etc/grafana/provisioning/datasources/prometheus-datasource.yaml
       - ${SRC_DIR}/grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
       - ${SRC_DIR}/grafana/dashboards:/var/lib/grafana/dashboards
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     logging:
       driver: "json-file"
       options:
