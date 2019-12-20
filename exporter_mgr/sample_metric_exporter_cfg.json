@@ -1,0 +1,14 @@
+{
+    "node_list": [
+        {
+            "hostaddr": "192.168.7.47",
+            "username": "root",
+            "password": "Helios12$"
+        },
+        {
+            "hostaddr": "192.168.7.48",
+            "username": "root",
+            "password": "Helios12$"
+        }
+    ]
+}
